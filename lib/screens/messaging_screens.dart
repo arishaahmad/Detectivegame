@@ -1,13 +1,11 @@
 // lib/screens/messaging_screens.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../game_state.dart';
 import '../models.dart';
 import '../widgets/widgets.dart';
-import 'splash_screen.dart'; // Import the splash screen
+import 'splash_screen.dart';
 
-// --- Messages List Screen ---
 class MessagesListScreen extends StatelessWidget {
   const MessagesListScreen({super.key});
 
@@ -52,7 +50,6 @@ class MessagesListScreen extends StatelessWidget {
   }
 }
 
-// --- Chat Screen ---
 class ChatScreen extends StatelessWidget {
   final Conversation conversation;
   const ChatScreen({super.key, required this.conversation});
@@ -75,7 +72,6 @@ class ChatScreen extends StatelessWidget {
               if (nameController.text.trim().isNotEmpty) {
                 Provider.of<GameState>(context, listen: false).saveContact(contact.id, nameController.text.trim());
 
-                // NEW: Navigate to the splash screen and clear all previous screens
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const EpisodeSplashScreen()),
                       (Route<dynamic> route) => false,
@@ -104,7 +100,7 @@ class ChatScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const TextField(
-                enabled: false, // This is not a real input field
+                enabled: false,
                 decoration: InputDecoration(
                   hintText: "Message",
                   border: InputBorder.none,
@@ -123,6 +119,7 @@ class ChatScreen extends StatelessWidget {
     final gameState = context.watch<GameState>();
     final contactId = conversation.participantIds.firstWhere((id) => id != 'player');
     final contact = gameState.getContact(contactId);
+    final showReplyOptions = gameState.showLanchesterReplyOptions && conversation.id == 'conv1';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -166,7 +163,14 @@ class ChatScreen extends StatelessWidget {
               },
             ),
           ),
-          _buildMessageComposer(),
+          if (showReplyOptions)
+            ReplyOptionsWidget(
+              onReplySelected: (text) {
+                Provider.of<GameState>(context, listen: false).sendPlayerReply(text);
+              },
+            )
+          else
+            _buildMessageComposer(),
         ],
       ),
     );

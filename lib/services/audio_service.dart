@@ -9,24 +9,25 @@ class AudioService {
   Timer? _fadeTimer;
 
   Future<void> playMusic(String filePath) async {
-    await _musicPlayer.setVolume(1.0); // Ensure volume is at max
+    await _musicPlayer.setVolume(1.0);
     await _musicPlayer.play(AssetSource(filePath));
     _musicPlayer.setReleaseMode(ReleaseMode.loop);
   }
 
   Future<void> playSfx(String filePath) async {
     await _sfxPlayer.play(AssetSource(filePath));
-    _sfxPlayer.setReleaseMode(ReleaseMode.release);
   }
 
-  void stopMusic() {
-    _musicPlayer.stop();
+  // NEW: Plays a sound multiple times with a short delay
+  Future<void> playRapidSfx(String filePath, {int count = 4, Duration delay = const Duration(milliseconds: 300)}) async {
+    for (int i = 0; i < count; i++) {
+      await _sfxPlayer.play(AssetSource(filePath));
+      await Future.delayed(delay);
+    }
   }
 
-  // NEW: Fades music out over a given duration
   Future<void> fadeOutMusic({Duration duration = const Duration(seconds: 2)}) async {
     double currentVolume = 1.0;
-    // Calculate how much to decrease the volume in each step
     final double step = currentVolume / (duration.inMilliseconds / 100);
 
     _fadeTimer?.cancel();
@@ -34,7 +35,7 @@ class AudioService {
       currentVolume -= step;
       if (currentVolume <= 0) {
         await _musicPlayer.stop();
-        await _musicPlayer.setVolume(1.0); // Reset volume for next time
+        await _musicPlayer.setVolume(1.0);
         timer.cancel();
       } else {
         await _musicPlayer.setVolume(currentVolume);

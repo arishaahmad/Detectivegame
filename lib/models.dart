@@ -39,3 +39,32 @@ class Conversation {
     required this.messages,
   });
 }
+
+class Email {
+  final String from;
+  final String subject;
+  final String body;
+  final DateTime timestamp;
+  final bool isRead;
+  final String? imageAttachmentAsset;
+
+  Email({
+    required this.from,
+    required this.subject,
+    required this.body,
+    required this.timestamp,
+    this.isRead = false,
+    this.imageAttachmentAsset,
+  });
+
+  Email copyWith({bool? isRead}) {
+    return Email(
+      from: from,
+      subject: subject,
+      body: body,
+      timestamp: timestamp,
+      isRead: isRead ?? this.isRead,
+      imageAttachmentAsset: imageAttachmentAsset,
+    );
+  }
+}

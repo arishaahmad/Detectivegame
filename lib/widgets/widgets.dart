@@ -2,9 +2,8 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../models.dart'; // Import models for the widgets that need them
+import '../models.dart';
 
-// --- Notification Popup Widget ---
 class NotificationPopup extends StatelessWidget {
   final Contact sender;
   final ChatMessage message;
@@ -45,8 +44,6 @@ class NotificationPopup extends StatelessWidget {
   }
 }
 
-
-// --- Chat Bubble Widget ---
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isFromPlayer;
@@ -82,15 +79,21 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
-
-// --- AppIcon Widget ---
 class AppIcon extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool isLocked;
+  final int badgeCount;
 
-  const AppIcon({super.key, required this.icon, required this.label, required this.onTap, this.isLocked = false});
+  const AppIcon({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isLocked = false,
+    this.badgeCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,27 +101,44 @@ class AppIcon extends StatelessWidget {
       onTap: isLocked ? () {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter your name to unlock the apps."), backgroundColor: Colors.redAccent));
       } : onTap,
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5), child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.white.withOpacity(0.25), Colors.white.withOpacity(0.1)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            ClipRRect(borderRadius: BorderRadius.circular(18), child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5), child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [Colors.white.withOpacity(0.25), Colors.white.withOpacity(0.1)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+              ),
+              child: Icon(isLocked ? Icons.lock_outline_rounded : icon, color: Colors.white, size: 30),
+            ))),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600, shadows: [Shadow(blurRadius: 5.0, color: Colors.black87, offset: Offset(1,1))]), maxLines: 1, overflow: TextOverflow.ellipsis),
+          ]),
+          if (badgeCount > 0)
+            Positioned(
+              top: 0,
+              right: 6,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-            child: Icon(isLocked ? Icons.lock_outline_rounded : icon, color: Colors.white, size: 30),
-          )),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600, shadows: [Shadow(blurRadius: 5.0, color: Colors.black87, offset: Offset(1,1))]), maxLines: 1, overflow: TextOverflow.ellipsis),
-      ]),
+        ],
+      ),
     );
   }
 }
 
-// --- PhoneStatusBar Widget ---
 class PhoneStatusBar extends StatelessWidget {
   final VoidCallback onTimeTap;
   const PhoneStatusBar({super.key, required this.onTimeTap});
@@ -135,7 +155,6 @@ class PhoneStatusBar extends StatelessWidget {
   }
 }
 
-// --- NamePromptPanel Widget ---
 class NamePromptPanel extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSubmit;
@@ -158,5 +177,32 @@ class NamePromptPanel extends StatelessWidget {
         ]),
       )),
     )));
+  }
+}
+
+class ReplyOptionsWidget extends StatelessWidget {
+  final Function(String) onReplySelected;
+  const ReplyOptionsWidget({super.key, required this.onReplySelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final options = ["Yes, I received them.", "Thank you."];
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+      color: Colors.grey[100],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: options.map((text) {
+          return ActionChip(
+            onPressed: () => onReplySelected(text),
+            backgroundColor: Colors.blue.withOpacity(0.1),
+            label: Text(
+              text,
+              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 }
